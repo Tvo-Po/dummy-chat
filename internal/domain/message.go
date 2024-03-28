@@ -1,6 +1,6 @@
 package domain
 
 type Message struct {
-  Sender string
-  Content string
+	Sender  string
+	Content string
 }
