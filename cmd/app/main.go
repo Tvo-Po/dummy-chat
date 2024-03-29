@@ -1,18 +1,25 @@
 package main
 
 import (
+	"context"
 	"dummy-chat/internal/manager"
 	"dummy-chat/internal/server"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"log"
 	"log/slog"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+	"time"
 )
 
 type AppConfig struct {
-	Port           string `json:"port"`
-	LogLevel       slog.Level
+	Port         string
+	LogLevel     slog.Level
+	ShutdownTime time.Duration
 }
 
 func ParseAppConfig() (*AppConfig, error) {
@@ -25,6 +32,7 @@ func ParseAppConfig() (*AppConfig, error) {
 	if err != nil {
 		return nil, err
 	}
+	configData.ShutdownTime *= time.Second
 	return configData, nil
 }
 
@@ -37,8 +45,35 @@ func main() {
 	opts := &slog.HandlerOptions{AddSource: true, Level: config.LogLevel}
 	logger := slog.New(slog.NewTextHandler(os.Stdout, opts))
 	m := manager.New(logger)
-	serv := server.New(logger, m, config.Port)
+	s := server.New(logger, m, config.Port)
+
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
 	go m.Run()
-	serv.Serve()
+	go s.Serve()
+
+	<-ctx.Done()
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), config.ShutdownTime)
+	defer cancel()
+
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		err = errors.Join(err, m.Shutdown(shutdownCtx))
+	}()
+
+	go func() {
+		defer wg.Done()
+		err = errors.Join(err, s.Shutdown(shutdownCtx))
+	}()
+
+	wg.Wait()
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }

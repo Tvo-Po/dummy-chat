@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"log/slog"
@@ -14,17 +15,20 @@ type ClientManager interface {
 type Server struct {
 	logger  *slog.Logger
 	manager ClientManager
-	port    string
+	serv    http.Server
 }
 
 func New(logger *slog.Logger, manager ClientManager, port string) *Server {
-	return &Server{logger, manager, port}
+	s := &Server{logger: logger, manager: manager}
+	mux := http.NewServeMux()
+	mux.Handle("/ws", http.HandlerFunc(s.ws))
+	s.serv = http.Server{Addr: fmt.Sprintf(":%s", port), Handler: mux}
+	return s
 }
 
 func (s *Server) Serve() {
-	http.HandleFunc("/ws", s.ws)
-	http.ListenAndServe(fmt.Sprintf(":%s", s.port), nil)
-	s.logger.Info("Server started...", slog.String("port", s.port))
+	s.logger.Info("Server started...", slog.String("port", s.serv.Addr))
+	s.serv.ListenAndServe()
 }
 
 func (s *Server) ws(res http.ResponseWriter, req *http.Request) {
@@ -42,4 +46,9 @@ func (s *Server) ws(res http.ResponseWriter, req *http.Request) {
 		http.NotFound(res, req)
 	}
 	s.manager.Connect(client)
+}
+
+func (s *Server) Shutdown(ctx context.Context) error {
+	s.logger.Info("Server releasing resources...")
+	return s.serv.Shutdown(ctx)
 }

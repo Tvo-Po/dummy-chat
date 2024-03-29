@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"context"
 	"dummy-chat/internal/domain"
 	"fmt"
 	"github.com/gorilla/websocket"
@@ -34,18 +35,19 @@ func (m *ClientManager) Run() {
 	m.logger.Info("Manager accepting connections...")
 	for {
 		select {
-		// TODO: ctx done
 		case client := <-m.disconnected:
 			if name, ok := m.clients[client]; ok {
 				m.logger.Info("Disconnecting client",
 					getClientLogInfo(client, name),
 				)
 				client.WriteMessage(websocket.CloseMessage, []byte{})
+				client.Close()
 				delete(m.clients, client)
 				go func() {
 					m.broadcast <- domain.Message{name, "disconnected"}
 				}()
 			}
+
 		case msg := <-m.broadcast:
 			m.logger.Debug(fmt.Sprintf("Broadcasting message: '%s'", msg.Content))
 			for client, name := range m.clients {
@@ -102,4 +104,29 @@ func (m *ClientManager) Connect(client *websocket.Conn) {
 			m.broadcast <- msg
 		}
 	}()
+}
+
+func (m *ClientManager) Shutdown(ctx context.Context) error {
+	shutdown := make(chan struct{})
+	go func() {
+		m.logger.Info("Manager releasing resources...")
+		close(m.disconnected)
+		close(m.broadcast)
+		m.disconnected = nil
+		m.broadcast = nil
+		for client, name := range m.clients {
+			m.logger.Debug("Disconnecting client on service shutdown",
+				getClientLogInfo(client, name),
+			)
+			client.WriteMessage(websocket.CloseMessage, []byte{})
+			client.Close()
+		}
+		shutdown <- struct{}{}
+	}()
+	select {
+	case <-ctx.Done():
+		return fmt.Errorf("Unsuccessful manager resources release")
+	case <-shutdown:
+		return nil
+	}
 }

@@ -1,4 +1,5 @@
 {
   "port": "8000",
-  "logLevel": "info"
+  "logLevel": "info",
+  "shutdownTime": 10
 }
