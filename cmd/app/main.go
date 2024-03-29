@@ -4,9 +4,8 @@ import (
 	"context"
 	"dummy-chat/internal/manager"
 	"dummy-chat/internal/server"
-	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"github.com/kelseyhightower/envconfig"
 	"log"
 	"log/slog"
 	"os"
@@ -17,18 +16,13 @@ import (
 )
 
 type AppConfig struct {
-	Port         string
-	LogLevel     slog.Level
-	ShutdownTime time.Duration
+	LogLevel     slog.Level    `envconfig:LOG_LEVEL`
+	ShutdownTime time.Duration `envconfig:SHUTDOWN_TIME`
 }
 
 func ParseAppConfig() (*AppConfig, error) {
-	configFile, err := ioutil.ReadFile("config.json")
-	if err != nil {
-		return nil, err
-	}
 	configData := &AppConfig{}
-	err = json.Unmarshal(configFile, configData)
+	err := envconfig.Process("", configData)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +39,7 @@ func main() {
 	opts := &slog.HandlerOptions{AddSource: true, Level: config.LogLevel}
 	logger := slog.New(slog.NewTextHandler(os.Stdout, opts))
 	m := manager.New(logger)
-	s := server.New(logger, m, config.Port)
+	s := server.New(logger, m, "8000")
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()

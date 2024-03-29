@@ -1,3 +1,3 @@
-/build
-node_modules/
-.angular
+/webui/dist/
+/webui/node_modules/
+/webui/.angular/
