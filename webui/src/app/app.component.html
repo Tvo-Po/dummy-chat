@@ -24,10 +24,23 @@
                 <h2>Enter your username</h2>
                 <mat-form-field appearance="outline">
                     <mat-label>Your username</mat-label>
-                    <input matInput [(ngModel)]="chatBox" [ngModelOptions]="{standalone: true}" autocomplete="off">
+                    <input
+                        required
+                        forbiddenUsername
+                        matInput
+                        [(ngModel)]="chatBox"
+                        [ngModelOptions]="{standalone: true}"
+                        autocomplete="off"
+                        #name="ngModel" />
+                @if (name.errors?.['required']) {
+                    <mat-error>Name required</mat-error>
+                }
+                @if (name.errors?.['forbiddenUsername']) {
+                    <mat-error>Name not available</mat-error>
+                }
                 </mat-form-field>
                 <div class="chat__name-enter-button">
-                    <button mat-stroked-button color="primary" (click)="enterName()">Enter</button>
+                    <button mat-stroked-button color="primary" (click)="name.valid && enterName()">Enter</button>
                 </div>
             </div>
         </div>

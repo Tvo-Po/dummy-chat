@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { Message, SocketEventType, SocketEvent } from "./domain.message"
+import { ForbiddenValidatorDirective } from "./app.directive"
 import { SocketService } from "./socket.service";
 
 enum ChatState {
@@ -22,6 +23,7 @@ enum ChatState {
   styleUrl: './app.component.scss',
   imports: [
     CommonModule,
+    ForbiddenValidatorDirective,
     FormsModule,
     MatButtonModule,
     MatInputModule,
@@ -35,7 +37,8 @@ export class AppComponent implements OnInit, OnDestroy {
   public chatBox: string;
   public state: ChatState;
   public ChatState: typeof ChatState;
-  public name: string;
+
+  private name: string;
 
   public constructor(private socket: SocketService) {
     this.messages = [];
@@ -50,7 +53,7 @@ export class AppComponent implements OnInit, OnDestroy {
     let handler: (event: SocketEvent) => void = event => {
       switch (event.type) {
         case SocketEventType.Open:
-          this.state = ChatState.Connected
+          this.state = ChatState.Connected;
           this.socket.setName(this.name);
           break;
         case SocketEventType.Close:
