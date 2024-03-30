@@ -44,7 +44,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.state = ChatState.Registrating;
     this.ChatState = ChatState;
-
   }
 
   public ngOnInit() {
@@ -54,11 +53,16 @@ export class AppComponent implements OnInit, OnDestroy {
           this.state = ChatState.Connected
           if (this.messages.length == 0) {
             this.socket.setName(this.name);
+          } else {
+            this.messages.push("_system_: You have been reconnected");
           }
           break;
         case SocketEventType.Close:
+          let prevState = this.state
           this.state = ChatState.Connecting
-          this.connect();
+          if (prevState == ChatState.Connected) {
+            this.connect();
+          }
           break;
         case SocketEventType.Message:
           const data = `${event.message.Sender}: ${event.message.Content}`;
@@ -78,7 +82,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.socket.connect();
       setTimeout(() => {
         this.connect();
-      }, 1000);
+      }, 5000);
     }
   }
 
