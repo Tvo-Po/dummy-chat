@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  dummy-chat-backend:
+  backend:
     build:
       context: .
       dockerfile: ./dockerfile.backend
@@ -9,12 +9,12 @@ services:
       - "8000:8000"
     environment:
       - LOG_LEVEL=INFO
-      - SHUTDOWN_TIME=10  # In seconds
+      - SHUTDOWN_TIME=10s
 
-  dummy-chat-frontend:
+  frontend:
     build:
       context: .
       dockerfile: ./dockerfile.frontend
-    depends_on: [dummy-chat-backend]
+    depends_on: [backend]
     ports:
       - "8080:80"

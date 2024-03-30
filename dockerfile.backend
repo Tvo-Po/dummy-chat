@@ -7,7 +7,6 @@ COPY internal ./internal
 RUN go build -o main cmd/app/main.go
 
 FROM --platform=linux/amd64 alpine:3.19
-WORKDIR /app
-COPY --from=builder /build/main .
-RUN chmod +x ./main
-ENTRYPOINT ["./main"]
+COPY --from=builder /build/main /app/main
+RUN chmod +x ./app/main
+ENTRYPOINT ["/app/main"]
