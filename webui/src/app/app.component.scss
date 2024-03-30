@@ -1,0 +1,10 @@
+div.chat__loader {
+  width: 100%;
+  height: calc(100% - 30px);
+  display: flex;
+  justify-content: center;
+
+  mat-spinner {
+    margin: auto;
+  }
+}

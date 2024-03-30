@@ -44,7 +44,7 @@ func (m *ClientManager) Run() {
 				client.Close()
 				delete(m.clients, client)
 				go func() {
-					m.broadcast <- domain.Message{name, "disconnected"}
+					m.broadcast <- domain.Message{"_system_", fmt.Sprintf("%s disconnected", name)}
 				}()
 			}
 
@@ -84,7 +84,7 @@ func (m *ClientManager) Connect(client *websocket.Conn) {
 		name := string(encodedName)
 		m.clients[client] = name
 		m.logger.Info("Set client name", getClientLogInfo(client, name))
-		m.broadcast <- domain.Message{name, "connected"}
+		m.broadcast <- domain.Message{"_system_", fmt.Sprintf("%s connected", name)}
 		for {
 			msg := domain.Message{}
 			if err := client.ReadJSON(&msg); err != nil {

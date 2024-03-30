@@ -16,22 +16,13 @@ import (
 )
 
 type AppConfig struct {
-	LogLevel     slog.Level    `envconfig:LOG_LEVEL`
-	ShutdownTime time.Duration `envconfig:SHUTDOWN_TIME`
-}
-
-func ParseAppConfig() (*AppConfig, error) {
-	configData := &AppConfig{}
-	err := envconfig.Process("", configData)
-	if err != nil {
-		return nil, err
-	}
-	configData.ShutdownTime *= time.Second
-	return configData, nil
+	LogLevel     slog.Level    `envconfig:"LOG_LEVEL"`
+	ShutdownTime time.Duration `envconfig:"SHUTDOWN_TIME"`
 }
 
 func main() {
-	config, err := ParseAppConfig()
+	config := &AppConfig{}
+	err := envconfig.Process("", config)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,9 +1,16 @@
-<ul id="messages">
-    <li *ngFor="let message of messages">
-        <span [innerHTML]="isSystemMessage(message)"></span>
-    </li>
-</ul>
-<form action="">
-    <input [(ngModel)]="chatBox" [ngModelOptions]="{standalone: true}" autocomplete="off" />
-    <button (click)="send()">Send</button>
-</form><!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+@if (state === ConnectionState.Established && name !== "") {
+    <ul id="messages">
+        <li *ngFor="let message of messages">
+            <span [innerHTML]="isSystemMessage(message)"></span>
+        </li>
+    </ul>
+    <form action="">
+        <input [(ngModel)]="chatBox" [ngModelOptions]="{standalone: true}" autocomplete="off" />
+        <button (click)="send()">Send</button>
+    </form>
+}
+@else {
+    <div class="chat__loader">
+        <mat-spinner diameter="70"></mat-spinner>
+    </div>
+}

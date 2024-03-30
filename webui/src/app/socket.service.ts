@@ -6,16 +6,19 @@ import { Message, SocketEventType } from './domain.message'
   providedIn: 'root'
 })
 export class SocketService {
-    private socket: WebSocket;
+    private socket?: WebSocket;
     private listener: EventEmitter<any> = new EventEmitter();
 
-  constructor() {
-    this.socket = new WebSocket("ws://0.0.0.0:8000/ws");
+  public connect() {
+    this.socket = new WebSocket("ws://localhost:8000/ws");
     this.socket.onopen = event => {
       this.listener.emit({"type": SocketEventType.Open});
     }
     this.socket.onclose = event => {
       this.listener.emit({"type": SocketEventType.Close});
+      setTimeout(() => {
+        this.connect()
+      }, 1000);
     }
     this.socket.onmessage = event => {
       this.listener.emit({"type": SocketEventType.Message, "message": JSON.parse(event.data)});
@@ -23,15 +26,15 @@ export class SocketService {
   }
 
   public send(msg: Message) {
-    this.socket.send(JSON.stringify(msg));
+    this.socket?.send(JSON.stringify(msg));
   }
 
   public setName(name: string) {
-    this.socket.send(name)
+    this.socket?.send(name)
   }
 
   public close() {
-    this.socket.close();
+    this.socket?.close();
   }
 
   public getEventListener() {
