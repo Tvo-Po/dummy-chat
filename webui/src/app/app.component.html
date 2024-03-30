@@ -1,13 +1,21 @@
 @if (state === ChatState.Connected) {
-    <ul id="messages">
-        <li *ngFor="let message of messages">
-            <span [innerHTML]="isSystemMessage(message)"></span>
-        </li>
-    </ul>
-    <form action="">
-        <input [(ngModel)]="chatBox" [ngModelOptions]="{standalone: true}" autocomplete="off" />
-        <button (click)="send()">Send</button>
-    </form>
+    <div class="chat">
+        <div class="chat__container">
+            <ul>
+                @for (message of messages; track message) {
+                    <li class="{{ getMessageClass(message) }}">
+                        <div [innerHtml]="message.Sender" class="chat__message-sender"></div>
+                        <div [innerHtml]="message.Content" class="chat__message-content"></div>
+                    </li>
+                }
+                <li #target></li>
+            </ul>
+            <form action="">
+                <input [(ngModel)]="chatBox" [ngModelOptions]="{standalone: true}" autocomplete="off" />
+                <button (click)="send(target)">Send</button>
+            </form>
+        </div>
+    </div>
 }
 @else if (state === ChatState.Registrating) {
     <div class="chat__name-popup">

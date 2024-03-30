@@ -31,7 +31,7 @@ enum ChatState {
 })
 export class AppComponent implements OnInit, OnDestroy {
 
-  public messages: Array<string>;
+  public messages: Array<Message>;
   public chatBox: string;
   public state: ChatState;
   public ChatState: typeof ChatState;
@@ -51,11 +51,7 @@ export class AppComponent implements OnInit, OnDestroy {
       switch (event.type) {
         case SocketEventType.Open:
           this.state = ChatState.Connected
-          if (this.messages.length == 0) {
-            this.socket.setName(this.name);
-          } else {
-            this.messages.push("_system_: You have been reconnected");
-          }
+          this.socket.setName(this.name);
           break;
         case SocketEventType.Close:
           let prevState = this.state
@@ -65,8 +61,7 @@ export class AppComponent implements OnInit, OnDestroy {
           }
           break;
         case SocketEventType.Message:
-          const data = `${event.message.Sender}: ${event.message.Content}`;
-          this.messages.push(data);
+          this.messages.push(event.message);
           break;
       }
     }
@@ -93,15 +88,18 @@ export class AppComponent implements OnInit, OnDestroy {
     this.connect();
   }
 
-  public send() {
+  public send(last: HTMLElement) {
     if (!this.chatBox) {
       return;
     }
     this.socket.send({Sender: this.name, Content: this.chatBox});
     this.chatBox = "";
+    setTimeout(() => {
+      last.scrollIntoView({behavior: 'smooth'});
+    }, 100);
   }
 
-  public isSystemMessage(message: string) {
-    return message.startsWith("_system_: ") ? "<strong>" + message.substring(9) + "</strong>" : message;
+  public getMessageClass(message: Message) {
+    return message.Sender == "_system_" ? "chat__message_system" : "chat__message";
   }
 }
