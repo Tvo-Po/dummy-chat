@@ -1,4 +1,4 @@
-@if (state === ConnectionState.Established && name !== "") {
+@if (state === ChatState.Connected) {
     <ul id="messages">
         <li *ngFor="let message of messages">
             <span [innerHTML]="isSystemMessage(message)"></span>
@@ -8,6 +8,22 @@
         <input [(ngModel)]="chatBox" [ngModelOptions]="{standalone: true}" autocomplete="off" />
         <button (click)="send()">Send</button>
     </form>
+}
+@else if (state === ChatState.Registrating) {
+    <div class="chat__name-popup">
+        <div class="chat__name-popup-row">
+            <div class="chat__name-popup-window">
+                <h2>Enter your username</h2>
+                <mat-form-field appearance="outline">
+                    <mat-label>Your username</mat-label>
+                    <input matInput [(ngModel)]="chatBox" [ngModelOptions]="{standalone: true}" autocomplete="off">
+                </mat-form-field>
+                <div class="chat__name-enter-button">
+                    <button mat-stroked-button color="primary" (click)="enterName()">Enter</button>
+                </div>
+            </div>
+        </div>
+    </div>
 }
 @else {
     <div class="chat__loader">

@@ -16,9 +16,6 @@ export class SocketService {
     }
     this.socket.onclose = event => {
       this.listener.emit({"type": SocketEventType.Close});
-      setTimeout(() => {
-        this.connect()
-      }, 1000);
     }
     this.socket.onmessage = event => {
       this.listener.emit({"type": SocketEventType.Message, "message": JSON.parse(event.data)});
@@ -34,7 +31,10 @@ export class SocketService {
   }
 
   public close() {
-    this.socket?.close();
+    if (this.socket) {
+      this.socket.onclose = null;
+      this.socket.close();
+    }
   }
 
   public getEventListener() {

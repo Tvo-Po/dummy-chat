@@ -8,3 +8,35 @@ div.chat__loader {
     margin: auto;
   }
 }
+
+div.chat__name {
+
+  &-popup {
+    background-color:rgba(0, 0, 0, 0.65);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  &-popup-row {
+    height: calc(100% - 80px);
+    display: flex;
+    align-items: center;
+  }
+
+  &-popup-window {
+    padding: 25px 45px 20px;
+    background-color: white;
+    border-radius: 5px;
+
+    h2 {
+      margin-bottom: 20px;
+    }
+  }
+
+  &-enter-button {
+    display: flex;
+    justify-content: end;
+  }
+}
